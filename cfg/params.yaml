@@ -1,0 +1,72 @@
+###########################################################
+#                                                         #
+# Copyright (c)                                           #
+#                                                         #
+# The Verifiable & Control-Theoretic Robotics (VECTR) Lab #
+# University of California, Los Angeles                   #
+#                                                         #
+# Authors: Kenny J. Chen, Ryan Nemiroff, Brett T. Lopez   #
+# Contact: {kennyjchen, ryguyn, btlopez}@ucla.edu         #
+#                                                         #
+###########################################################
+
+dlio:
+
+  frames:
+    odom: odom
+    baselink: base_link
+    lidar: lidar
+    imu: imu
+
+  map:
+    waitUntilMove: true
+    dense:
+      filtered: false #was false
+    sparse:
+      leafSize: 0.05 #default 0.25 
+
+  odom:
+
+    gravity: -9.80665
+    computeTimeOffset: true
+
+    imu:
+      approximateGravity: true #default: true #working: false
+      calibration:
+        gyro: true #default true
+        accel: true #default true
+        time: 8 #Preferably 8-10 Seconds #deafult 3 seconds
+      bufferSize: 5000 #20000 #Default 5000
+
+    preprocessing:
+      cropBoxFilter:
+        size: 0.3 #Default: 1.0, Tunnel: 0.0 disable to avoid losing features in narrow tunnels
+      voxelFilter:
+        res: 0.12 #Default: 0.25 , Tunnel: 0.12 (0.10–0.15 m is a sweet spot for tunnel UAVs)
+
+    keyframe:
+      threshD: 0.5 #default 1.0 #0.5 #Tunnel: 0.4–0.6 m: more keyframes in tunnels improves local consistency
+      threshR: 30  #default 45.0 #30.0 Tunnel: 25 degrees; tighter than default to catch bends
+
+    submap:
+      keyframe:
+        knn: 12 #default 10  #Tunnel:12
+        kcv: 12 #default 10 #Tunnel:12
+        kcc: 12 #default 10 #Tunnel:12
+    gicp:
+      minNumPoints: 40 #Default: 64 , Tunnel:40 allow small clouds
+      kCorrespondences: 12  #Default: 16 , Tunnel:12 adequate for sparse keeps it stable
+      maxCorrespondenceDistance: 0.75 #Default: 0.5 ,Tunnel: 0.75  a bit forgiving for tight, repetitive geometry
+      maxIterations: 48  #Default: 32 ,Tunnel:48  more iterations for reliability; 32–64 is fine
+      transformationEpsilon: 0.005 #Default: 0.01 ,Tunnel: 0.005  stricter convergence
+      rotationEpsilon: 0.005 #Default: 0.01 ,Tunnel: 0.005
+      initLambdaFactor: 1e-9 #Default: 1e-9 ,Tunnel: same
+
+    geo:
+      Kp: 4.5
+      Kv: 11.25
+      Kq: 4.0
+      Kab:  2.25 #Default 2.25 #3.0
+      Kgb: 1.0
+      abias_max: 0.0
+      gbias_max: 0.05

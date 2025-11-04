@@ -1,0 +1,9 @@
+Unable to register with master node [http://localhost:11311]: master may not be running yet. Will keep trying.
+Traceback (most recent call last):
+  File "/home/nvidia/dlio_ws/src/saverostopic.py", line 61, in <module>
+    listener()
+  File "/home/nvidia/dlio_ws/src/saverostopic.py", line 56, in listener
+    rospy.init_node('pose_logger', anonymous=True)
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/client.py", line 336, in init_node
+    raise rospy.exceptions.ROSInitException("Failed to initialize time. Please check logs for additional details")
+rospy.exceptions.ROSInitException: Failed to initialize time. Please check logs for additional details

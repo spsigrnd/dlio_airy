@@ -1,0 +1,334 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Manager</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .connected { background-color: #4CAF50; }
+        .disconnected { background-color: #F44336; }
+        .master-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top:5px; }
+        button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .start-btn { background-color: #4CAF50; color: white; }
+        .stop-btn { background-color: #F44336; color: white; }
+        .master-start { background-color: #2196F3; color: white; }
+        .master-stop { background-color: #FF9800; color: white; }
+        .terminals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .terminal-card { background-color: #fff; border-radius: 5px; padding:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .terminal { background-color: #000; color: #0F0; font-family: 'Courier New', monospace; padding: 15px; border-radius: 5px; height: 200px; overflow-y: auto; white-space: pre-wrap; }
+        .terminal-controls { display: flex; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap:5px; }
+        .terminal-title { font-weight: bold; margin-bottom: 5px; color: #333; }
+        .terminal-status { font-size: 0.9em; color: #666; }
+        .running { color: #4CAF50; }
+        .stopped { color: #F44336; }
+        /* Drone container responsiveness */
+        #drone-container { flex:1 1 400px; height:400px; background:#000; border-radius:10px; }
+        .drone-info { flex:1 1 200px; color:#333; font-family:Arial, sans-serif; min-width:200px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Terminal Manager</h1>
+                <div id="connection-status">
+                    <span class="status-indicator disconnected" id="status-indicator"></span>
+                    <span id="status-text">Disconnected from server</span>
+                </div>
+            </div>
+            <div class="master-controls">
+                <button class="master-start" onclick="startAll()">Master Start</button>
+                <button class="master-stop" onclick="stopAll()">Master Stop</button>
+            </div>
+        </div>
+
+        <div class="terminals-grid">
+            {% for id, term in terminals.items() %}
+            <div class="terminal-card">
+                <div class="terminal-title">Terminal {{ id }}: {{ term.name }}</div>
+                <div class="terminal-controls">
+                    <button class="start-btn" onclick="startTerminal({{ id }})">Start</button>
+                    <button class="stop-btn" onclick="stopTerminal({{ id }})">Stop</button>
+                    <span class="terminal-status" id="status-{{ id }}">Stopped</span>
+                </div>
+                <div class="terminal" id="terminal-{{ id }}"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Drone Visualization Section -->
+        <div class="terminal-card" style="margin-top:20px;">
+            <div class="terminal-title">Drone Visualization (Terminal 4)</div>
+            <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center;">
+                <div id="drone-container"></div>
+                <div class="drone-info">
+                    <h3>Position (X, Y, Z)</h3>
+                    <p id="pos-text">X=0, Y=0, Z=0</p>
+                    <h3>Orientation</h3>
+                    <p id="orient-text">Yaw=0°, Pitch=0°, Roll=0°</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ======================
+// SOCKET.IO CONNECTION
+// ======================
+const socket = io();
+let connected = false;
+
+socket.on('connect', function() {
+    connected = true;
+    updateConnectionStatus(true);
+    console.log('Connected to server');
+    for (let i = 1; i <= 6; i++) {
+        loadTerminalOutput(i);
+        checkTerminalStatus(i);
+    }
+});
+
+socket.on('disconnect', function() {
+    connected = false;
+    updateConnectionStatus(false);
+    console.log('Disconnected from server');
+});
+
+socket.on('connection_status', function(data) {
+    connected = data.status === 'connected';
+    updateConnectionStatus(connected);
+});
+
+// ======================
+// REAL-TIME TERMINAL OUTPUT
+// ======================
+socket.on('terminal_output', function(data) {
+    const terminal = document.getElementById(`terminal-${data.id}`);
+    if (terminal) {
+        terminal.textContent += data.output;
+        const lines = terminal.textContent.split('\n');
+        if (lines.length > 100) terminal.textContent = lines.slice(-100).join('\n');
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    // Update drone from Terminal 4
+    if (data.id === 4) {
+        updateDrone(data.output);
+    }
+});
+
+// ======================
+// DRONE 3D ANIMATION
+// ======================
+let scene, camera, renderer, drone, targetRotation = {x:0,y:0,z:0};
+initDrone();
+
+function initDrone() {
+    const container = document.getElementById('drone-container');
+    
+    const width = container.clientWidth || 400;
+    const height = container.clientHeight || 400;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.position.set(3, 3, 6);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7);
+    scene.add(directionalLight);
+
+    // Drone body
+    const bodyGeometry = new THREE.BoxGeometry(1,0.2,1);
+    const bodyMaterial = new THREE.MeshStandardMaterial({color:0x00ff00});
+    drone = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    scene.add(drone);
+
+    // Drone arms
+    const armLength = 1.5;
+    for(let i=0;i<4;i++){
+        const armMat = new THREE.MeshStandardMaterial({color:0xff0000});
+        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,armLength,8), armMat);
+        const angle = i * Math.PI / 2;
+        arm.position.set(Math.cos(angle)*(armLength/2), 0, Math.sin(angle)*(armLength/2));
+        arm.rotation.y = angle;
+        drone.add(arm);
+    }
+
+    animateDrone();
+}
+
+function animateDrone() {
+    requestAnimationFrame(animateDrone);
+    // Smooth rotation interpolation
+    drone.rotation.x += (targetRotation.x - drone.rotation.x)*0.1;
+    drone.rotation.y += (targetRotation.y - drone.rotation.y)*0.1;
+    drone.rotation.z += (targetRotation.z - drone.rotation.z)*0.1;
+    renderer.render(scene, camera);
+}
+
+function updateDrone(output) {
+    const yawMatch = output.match(/Yaw=([-\d.]+)/);
+    const pitchMatch = output.match(/Pitch-?=?([-\d.]+)/);
+    const rollMatch = output.match(/Roll ?=?([-\d.]+)/);
+    const xMatch = output.match(/X=([-\d.]+)/);
+    const yMatch = output.match(/Y=([-\d.]+)/);
+    const zMatch = output.match(/Z=([-\d.]+)/);
+
+    if(yawMatch && pitchMatch && rollMatch){
+        const yaw = parseFloat(yawMatch[1]);
+        const pitch = parseFloat(pitchMatch[1]);
+        const roll = parseFloat(rollMatch[1]);
+        targetRotation.x = THREE.MathUtils.degToRad(pitch);
+        targetRotation.y = THREE.MathUtils.degToRad(yaw);
+        targetRotation.z = THREE.MathUtils.degToRad(roll);
+        document.getElementById('orient-text').textContent = 
+            `Yaw=${yaw.toFixed(2)}°, Pitch=${pitch.toFixed(2)}°, Roll=${roll.toFixed(2)}°`;
+    }
+
+    if(xMatch && yMatch && zMatch){
+        const x = parseFloat(xMatch[1]);
+        const y = parseFloat(yMatch[1]);
+        const z = parseFloat(zMatch[1]);
+        document.getElementById('pos-text').textContent = `X=${x.toFixed(2)}, Y=${y.toFixed(2)}, Z=${z.toFixed(2)}`;
+    }
+}
+
+// ======================
+// UI & Terminal Controls
+// ======================
+function updateConnectionStatus(isConnected){
+    const indicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+    if(isConnected){indicator.className='status-indicator connected'; statusText.textContent='Connected to server';
+         } else {
+        indicator.className='status-indicator disconnected';
+        statusText.textContent='Disconnected from server';
+    }
+}
+
+// Start/Stop terminals
+function startTerminal(id){
+    if(!connected){ alert('Not connected to server'); return; }
+    axios.post(`/start_terminal/${id}`)
+        .then(response => { console.log(`Terminal ${id} started`, response.data); checkTerminalStatus(id); })
+        .catch(err => { console.error(err); alert('Failed to start terminal'); });
+}
+
+function stopTerminal(id){
+    if(!connected){ alert('Not connected to server'); return; }
+    axios.post(`/stop_terminal/${id}`)
+        .then(response => { console.log(`Terminal ${id} stopped`, response.data); checkTerminalStatus(id); })
+        .catch(err => { console.error(err); alert('Failed to stop terminal'); });
+}
+
+function startAll(){
+    if(!connected){ alert('Not connected to server'); return; }
+    axios.post('/start_all')
+        .then(response => { console.log('All terminals started', response.data); for(let i=1;i<=6;i++){ checkTerminalStatus(i); } })
+        .catch(err => { console.error(err); alert('Failed to start all terminals'); });
+}
+
+function stopAll(){
+    if(!connected){ alert('Not connected to server'); return; }
+    axios.post('/stop_all')
+        .then(response => { console.log('All terminals stopped', response.data); for(let i=1;i<=6;i++){ checkTerminalStatus(i); } })
+        .catch(err => { console.error(err); alert('Failed to stop all terminals'); });
+}
+
+// Terminal status check
+function checkTerminalStatus(id){
+    axios.get(`/terminal_status/${id}`)
+        .then(response => {
+            const statusElement = document.getElementById(`status-${id}`);
+            if(statusElement){
+                if(response.data.running){
+                    statusElement.textContent='Running';
+                    statusElement.className='terminal-status running';
+                } else {
+                    statusElement.textContent='Stopped';
+                    statusElement.className='terminal-status stopped';
+                }
+            }
+        })
+        .catch(err => { console.error(err); });
+}
+
+// Fallback load terminal output
+function loadTerminalOutput(id){
+    axios.get(`/terminal_output/${id}`)
+        .then(response => {
+            const terminal = document.getElementById(`terminal-${id}`);
+            if(terminal){ terminal.textContent=response.data.output; terminal.scrollTop=terminal.scrollHeight; }
+        })
+        .catch(err => { console.error(err); });
+}
+
+// Periodic server health check
+setInterval(()=>{
+    axios.get('/health')
+        .then(response => { if(response.data.status==='ok' && !connected) socket.connect(); })
+        .catch(err => { updateConnectionStatus(false); });
+},3000);
+
+// Periodically refresh terminal status
+setInterval(()=>{
+    if(connected){ for(let i=1;i<=6;i++){ checkTerminalStatus(i); } }
+},5000);
+
+// Handle window resize for drone
+window.addEventListener('resize', ()=>{
+    const container = document.getElementById('drone-container');
+    const width = container.clientWidth || 400;
+    const height = container.clientHeight || 400;
+    camera.aspect = width/height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width,height);
+});
+</script>
+</body>
+</html>

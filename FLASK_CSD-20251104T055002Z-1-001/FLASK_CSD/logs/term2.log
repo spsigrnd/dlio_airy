@@ -1,0 +1,121 @@
+[31mRLException: run_id on parameter server does not match declared run_id: 3b86c26e-1dd2-11b2-a9c8-3c6d6661485f vs 3c2067c0-1dd2-11b2-9834-3c6d6661485f[0m
+[31mThe traceback for the exception was written to the log file[0m
+... logging to /home/nvidia/.ros/log/3c2067c0-1dd2-11b2-9834-3c6d6661485f/roslaunch-ubuntu-3792.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/nvidia/dlio_ws/src/direct_lidar_inertial_odometry/launch/dlio.launch
+[1mstarted roslaunch server http://ubuntu:46681/[0m
+
+SUMMARY
+========
+
+CLEAR PARAMETERS
+ * /robot/dlio_map/
+ * /robot/dlio_odom/
+
+PARAMETERS
+ * /robot/dlio_map/dlio/adaptive: True
+ * /robot/dlio_map/dlio/extrinsics/baselink2imu/R: [0.707, 0.0, -0.7...
+ * /robot/dlio_map/dlio/extrinsics/baselink2imu/t: [0.0, 0.0, 0.0]
+ * /robot/dlio_map/dlio/extrinsics/baselink2lidar/R: [0.707, 0.0, -0.7...
+ * /robot/dlio_map/dlio/extrinsics/baselink2lidar/t: [0.0, 0.0, 0.0]
+ * /robot/dlio_map/dlio/frames/baselink: base_link
+ * /robot/dlio_map/dlio/frames/imu: imu
+ * /robot/dlio_map/dlio/frames/lidar: lidar
+ * /robot/dlio_map/dlio/frames/odom: odom
+ * /robot/dlio_map/dlio/imu/calibration: True
+ * /robot/dlio_map/dlio/imu/intrinsics/accel/bias: [0.0, 0.0, 0.0]
+ * /robot/dlio_map/dlio/imu/intrinsics/accel/sm: [1.0, 0.0, 0.0, 0...
+ * /robot/dlio_map/dlio/imu/intrinsics/gyro/bias: [0.0, 0.0, 0.0]
+ * /robot/dlio_map/dlio/map/dense/filtered: False
+ * /robot/dlio_map/dlio/map/sparse/leafSize: 0.05
+ * /robot/dlio_map/dlio/map/waitUntilMove: True
+ * /robot/dlio_map/dlio/odom/computeTimeOffset: True
+ * /robot/dlio_map/dlio/odom/geo/Kab: 2.25
+ * /robot/dlio_map/dlio/odom/geo/Kgb: 1.0
+ * /robot/dlio_map/dlio/odom/geo/Kp: 4.5
+ * /robot/dlio_map/dlio/odom/geo/Kq: 4.0
+ * /robot/dlio_map/dlio/odom/geo/Kv: 11.25
+ * /robot/dlio_map/dlio/odom/geo/abias_max: 0.0
+ * /robot/dlio_map/dlio/odom/geo/gbias_max: 0.05
+ * /robot/dlio_map/dlio/odom/gicp/initLambdaFactor: 1e-9
+ * /robot/dlio_map/dlio/odom/gicp/kCorrespondences: 12
+ * /robot/dlio_map/dlio/odom/gicp/maxCorrespondenceDistance: 0.75
+ * /robot/dlio_map/dlio/odom/gicp/maxIterations: 48
+ * /robot/dlio_map/dlio/odom/gicp/minNumPoints: 40
+ * /robot/dlio_map/dlio/odom/gicp/rotationEpsilon: 0.005
+ * /robot/dlio_map/dlio/odom/gicp/transformationEpsilon: 0.005
+ * /robot/dlio_map/dlio/odom/gravity: 9.80665
+ * /robot/dlio_map/dlio/odom/imu/approximateGravity: False
+ * /robot/dlio_map/dlio/odom/imu/bufferSize: 5000
+ * /robot/dlio_map/dlio/odom/imu/calibration/accel: True
+ * /robot/dlio_map/dlio/odom/imu/calibration/gyro: True
+ * /robot/dlio_map/dlio/odom/imu/calibration/time: 8
+ * /robot/dlio_map/dlio/odom/keyframe/threshD: 0.5
+ * /robot/dlio_map/dlio/odom/keyframe/threshR: 30
+ * /robot/dlio_map/dlio/odom/preprocessing/cropBoxFilter/size: 0.0
+ * /robot/dlio_map/dlio/odom/preprocessing/voxelFilter/res: 0.12
+ * /robot/dlio_map/dlio/odom/submap/keyframe/kcc: 12
+ * /robot/dlio_map/dlio/odom/submap/keyframe/kcv: 12
+ * /robot/dlio_map/dlio/odom/submap/keyframe/knn: 12
+ * /robot/dlio_map/dlio/pointcloud/deskew: True
+ * /robot/dlio_map/dlio/pointcloud/voxelize: True
+ * /robot/dlio_map/dlio/version: 1.1.1
+ * /robot/dlio_odom/dlio/adaptive: True
+ * /robot/dlio_odom/dlio/extrinsics/baselink2imu/R: [0.707, 0.0, -0.7...
+ * /robot/dlio_odom/dlio/extrinsics/baselink2imu/t: [0.0, 0.0, 0.0]
+ * /robot/dlio_odom/dlio/extrinsics/baselink2lidar/R: [0.707, 0.0, -0.7...
+ * /robot/dlio_odom/dlio/extrinsics/baselink2lidar/t: [0.0, 0.0, 0.0]
+ * /robot/dlio_odom/dlio/frames/baselink: base_link
+ * /robot/dlio_odom/dlio/frames/imu: imu
+ * /robot/dlio_odom/dlio/frames/lidar: lidar
+ * /robot/dlio_odom/dlio/frames/odom: odom
+ * /robot/dlio_odom/dlio/imu/calibration: True
+ * /robot/dlio_odom/dlio/imu/intrinsics/accel/bias: [0.0, 0.0, 0.0]
+ * /robot/dlio_odom/dlio/imu/intrinsics/accel/sm: [1.0, 0.0, 0.0, 0...
+ * /robot/dlio_odom/dlio/imu/intrinsics/gyro/bias: [0.0, 0.0, 0.0]
+ * /robot/dlio_odom/dlio/map/dense/filtered: False
+ * /robot/dlio_odom/dlio/map/sparse/leafSize: 0.05
+ * /robot/dlio_odom/dlio/map/waitUntilMove: True
+ * /robot/dlio_odom/dlio/odom/computeTimeOffset: True
+ * /robot/dlio_odom/dlio/odom/geo/Kab: 2.25
+ * /robot/dlio_odom/dlio/odom/geo/Kgb: 1.0
+ * /robot/dlio_odom/dlio/odom/geo/Kp: 4.5
+ * /robot/dlio_odom/dlio/odom/geo/Kq: 4.0
+ * /robot/dlio_odom/dlio/odom/geo/Kv: 11.25
+ * /robot/dlio_odom/dlio/odom/geo/abias_max: 0.0
+ * /robot/dlio_odom/dlio/odom/geo/gbias_max: 0.05
+ * /robot/dlio_odom/dlio/odom/gicp/initLambdaFactor: 1e-9
+ * /robot/dlio_odom/dlio/odom/gicp/kCorrespondences: 12
+ * /robot/dlio_odom/dlio/odom/gicp/maxCorrespondenceDistance: 0.75
+ * /robot/dlio_odom/dlio/odom/gicp/maxIterations: 48
+ * /robot/dlio_odom/dlio/odom/gicp/minNumPoints: 40
+ * /robot/dlio_odom/dlio/odom/gicp/rotationEpsilon: 0.005
+ * /robot/dlio_odom/dlio/odom/gicp/transformationEpsilon: 0.005
+ * /robot/dlio_odom/dlio/odom/gravity: 9.80665
+ * /robot/dlio_odom/dlio/odom/imu/approximateGravity: False
+ * /robot/dlio_odom/dlio/odom/imu/bufferSize: 5000
+ * /robot/dlio_odom/dlio/odom/imu/calibration/accel: True
+ * /robot/dlio_odom/dlio/odom/imu/calibration/gyro: True
+ * /robot/dlio_odom/dlio/odom/imu/calibration/time: 8
+ * /robot/dlio_odom/dlio/odom/keyframe/threshD: 0.5
+ * /robot/dlio_odom/dlio/odom/keyframe/threshR: 30
+ * /robot/dlio_odom/dlio/odom/preprocessing/cropBoxFilter/size: 0.0
+ * /robot/dlio_odom/dlio/odom/preprocessing/voxelFilter/res: 0.12
+ * /robot/dlio_odom/dlio/odom/submap/keyframe/kcc: 12
+ * /robot/dlio_odom/dlio/odom/submap/keyframe/kcv: 12
+ * /robot/dlio_odom/dlio/odom/submap/keyframe/knn: 12
+ * /robot/dlio_odom/dlio/pointcloud/deskew: True
+ * /robot/dlio_odom/dlio/pointcloud/voxelize: True
+ * /robot/dlio_odom/dlio/version: 1.1.1
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+  /robot/
+    dlio_map (direct_lidar_inertial_odometry/dlio_map_node)
+    dlio_odom (direct_lidar_inertial_odometry/dlio_odom_node)
+
+[1mROS_MASTER_URI=http://localhost:11311[0m
+]2;/home/nvidia/dlio_ws/src/direct_lidar_inertial_odometry/launch/dlio.launch http://localhost:11311

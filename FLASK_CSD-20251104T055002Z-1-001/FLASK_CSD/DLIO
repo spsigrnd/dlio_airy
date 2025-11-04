@@ -1,0 +1,90 @@
+Terminal Command:
+For DLIO:
+cd dlio_ws
+Terminal:01
+source devel/setup.bash
+roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=false pointcloud_topic:=/rslidar_points imu_topic:=/rslidar_imu_data
+
+Terminal:02
+For rslidar SDk:
+
+cd dlio_ws
+source devel/setup.bash
+roslaunch rslidar_sdk start.launch
+
+Terminal3
+Bridge between mavros and pixhawk:
+roslaunch mavros apm.launch fcu_url:=/dev/ttyUSB0:921600
+ Terminal 4:
+ Publish dlio data to mavros
+ python3 /home/nvidia/dlio_ws/src/dlio-Mavros_bridge/scripts/test13.py
+ 
+For 10Hz
+ python3 /home/nvidia/Downloads/vision_pose_10_HZ.py
+ Terminal To record data:
+ # Record local pose data
+ python3 /home/nvidia/dlio_ws/src/dlio-Mavros_bridge/scripts/localposecsv.py
+ Terminal:05(optional)
+ #Record DLIO OUTPUT in csv formate for post process
+
+ python3 /home/nvidia/dlio_ws/src/saverostopic.py
+ 
+# python3 /home/nwhetehr local pose get published or not:
+
+rostopic echo /mavros/local_position/pose
+
+#Check Whether mavros/pose got published or not
+
+ rostopic echo /mavros/vision_pose/pose
+ 
+Working one with 05/09/2025  approx gravity false, gravity= 9.8
+  extrinsics:
+    baselink2imu:
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.707, 0.0, -0.707,
+           0.0, 1.0, 0.0,
+           0.707, 0.0, 0.707 ]
+
+    baselink2lidar:
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.707, 0.0, -0.707,
+           0.0, 1.0, 0.0,
+           0.707, 0.0, 0.707 ]
+IMU  roll pitch +lidar 45 degree
+
+  extrinsics:
+    baselink2imu:
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.0,-0.707, 0.707,
+           1.0, 0.0, 0.0,
+           0.0, 0.707, 0.707]
+
+    baselink2lidar:
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.707, 0.0, -0.707,
+           0.0, 1.0, 0.0,
+           0.707, 0.0, 0.707 ]
+
+12/09/2025 roll/pich/yaw x. y,z correct with 45 tilt, gravity= -9.8,approx_grav=true
+
+  extrinsics:
+    baselink2imu:  # imu x=0,y=45,z=90
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.0,-0.707, 0.707,
+           1.0, 0.0, 0.0,
+           0.0, 0.707, 0.707]
+
+    baselink2lidar:   #lidar x=0 deg, y= -45, z=0
+      t: [ 0.0, 0.0, 0.0  ]
+      R: [ 0.707, 0.0, -0.707,
+           0.0, 1.0, 0.0,
+           0.707, 0.0, 0.707 ]
+           
+           
+ Error:
+ terminate called after throwing an instance of 'ros::serialization::StreamOverrunException'
+  what():  Buffer Overrun
+[robot/dlio_odom-2] process has died [pid 5089, exit code -6, cmd /home/nvidia/dlio_ws/devel/lib/direct_lidar_inertial_odometry/dlio_odom_node ~pointcloud:=/rslidar_points ~imu:=/rslidar_imu_data ~odom:=dlio/odom_node/odom ~pose:=dlio/odom_node/pose ~path:=dlio/odom_node/path ~kf_pose:=dlio/odom_node/keyframes ~kf_cloud:=dlio/odom_node/pointcloud/keyframe ~deskewed:=dlio/odom_node/pointcloud/deskewed __name:=dlio_odom __log:=/home/nvidia/.ros/log/80768706-91fc-11f0-b74c-3c6d6661485f/robot-dlio_odom-2.log].
+log file: /home/nvidia/.ros/log/80768706-91fc-11f0-b74c-3c6d6661485f/robot-dlio_odom-2*.log
+
+

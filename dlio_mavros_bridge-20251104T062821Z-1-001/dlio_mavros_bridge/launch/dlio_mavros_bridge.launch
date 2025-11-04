@@ -1,0 +1,16 @@
+<launch>
+    <!-- DLIO to MAVROS Bridge -->
+    <node pkg="dlio_mavros_bridge" type="dlio_mavros_bridge.py" name="dlio_mavros_bridge" output="screen">
+        <param name="publish_rate" value="10.0" />
+        <param name="odom_frame" value="robot/odom" />
+        <param name="base_frame" value="robot/base_link" />
+    </node>
+    
+    <!-- MAVROS -->
+    <include file="$(find mavros)/launch/apm.launch">
+        <arg name="fcu_url" value="tcp://127.0.0.1:5760" /> <!-- For SITL -->
+        <!-- For real hardware use something like: -->
+        <!-- <arg name="fcu_url" value="/dev/ttyACM0:57600" /> -->
+    </include>
+</launch>
+
